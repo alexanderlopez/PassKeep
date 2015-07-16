@@ -7,11 +7,14 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 
 
 public class LoginActivity extends ActionBarActivity {
@@ -137,49 +141,38 @@ public class LoginActivity extends ActionBarActivity {
 
     private void ImportFile()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
+        Intent getFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        getFileIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, false);
+        getFileIntent.setType("*/*");
+        Intent chooser = Intent.createChooser(getFileIntent, "Select File:");
+        if (getFileIntent.resolveActivity(getPackageManager()) != null)
+            startActivityForResult(getFileIntent, FILE_REQUEST_CODE);
+        else
+            Toast.makeText(this, "No Application avaliable to select File!", Toast.LENGTH_LONG).show();
+    }
 
-        final View layoutView = inflater.inflate(R.layout.custom_dialog, null);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+            Uri fileUri = data.getData();
 
-        builder.setView(layoutView);
+            try {
+                FileInputStream fis = (FileInputStream) getContentResolver().openInputStream(fileUri);
+                FileOutputStream fos = openFileOutput("mainFile.keep", Context.MODE_PRIVATE);
 
-        builder.setTitle("File To Import");
-
-        builder.setPositiveButton("Import", new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface arg0, int arg1)
-            {
-                EditText text = (EditText) layoutView.findViewById(R.id.fileDir);
-                String dir = text.getText().toString();
-
-                File toImport = new File(dir);
-                File mainFile = new File(getFilesDir().getPath() + "/mainFile.keep");
-
-                try {
-                    FileInputStream fis = new FileInputStream(toImport);
-                    FileOutputStream fos = openFileOutput("mainFile.keep", Context.MODE_PRIVATE);
-
-                    int read = 0;
-                    byte[] buffer = new byte[1024];
-                    while ((read = fis.read(buffer)) != -1)
-                    {
-                        fos.write(buffer, 0, read);
-                    }
-                    fos.flush();
-                    fis.close();
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                int read = 0;
+                byte[] buffer = new byte[1024];
+                while ((read = fis.read(buffer)) != -1)
+                {
+                    fos.write(buffer, 0, read);
                 }
+                fos.flush();
+                fis.close();
+                fos.close();
+            } catch (IOException e) {
+                Log.e("PASSKEEP", e.getMessage());
             }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface arg0, int arg1) {
-                arg0.cancel();
-            }
-        });
-
-        builder.create().show();
+        }
     }
 
     @Override
@@ -207,4 +200,5 @@ public class LoginActivity extends ActionBarActivity {
 
     private Button login;
     private EditText pass_box;
+    private static final int FILE_REQUEST_CODE = 1;
 }

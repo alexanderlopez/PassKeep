@@ -2,10 +2,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.alexander.passkeep.PassActivity">
-    <item android:id="@+id/action_addPass" android:title="Add Password"
-        android:orderInCategory="100" app:showAsAction="never" />
-    <item android:id="@+id/action_savePass" android:title="Save"
+    <item android:id="@+id/action_addPass" android:title="@string/add_password_menu"
+        android:orderInCategory="98" app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_action_add"/>
+    <item android:id="@+id/action_savePass" android:title="@string/save_file_menu"
         android:orderInCategory="99" app:showAsAction="never" />
-    <item android:id="@+id/action_exportPass" android:title="Export .keep File"
+    <item android:id="@+id/action_exportPass" android:title="@string/export_file_menu"
         android:orderInCategory="101" app:showAsAction="never" />
+    <item android:id="@+id/action_changePass" android:title="@string/change_password_menu"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

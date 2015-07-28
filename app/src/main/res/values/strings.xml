@@ -6,5 +6,12 @@
     <string name="title_activity_pass">Password List</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="password_check">Check Password</string>
+    <string name="new_password">New Password</string>
+    <string name="original_password">Original Password</string>
+    <string name="add_password_menu">Add Password</string>
+    <string name="save_file_menu">Save</string>
+    <string name="export_file_menu">Export .keep File</string>
+    <string name="change_password_menu">Change Login Password</string>
 
 </resources>

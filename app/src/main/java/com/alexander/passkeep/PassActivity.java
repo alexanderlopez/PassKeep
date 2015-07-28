@@ -1,12 +1,11 @@
 package com.alexander.passkeep;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,23 +14,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.alexander.passkeep.Tools.TripleDesHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.List;
 
 
 public class PassActivity extends ActionBarActivity {
@@ -54,24 +46,25 @@ public class PassActivity extends ActionBarActivity {
         LoadList();
     }
 
-    private void LoadList()
-    {
+    private void LoadList() {
         try {
             FileInputStream fis = new FileInputStream(main);
-            byte[] data = new byte[(int)main.length()];
-            fis.read(data);
+            byte[] data = new byte[(int) main.length()];
+            int read = fis.read(data);
             fis.close();
+
+            if (read != main.length())
+                Log.e("PassKeep", "Unable to read full File!");
 
             String file = new String(data, "UTF-8");
             String[] parts = file.split("\n");
 
-            passMatrix = new Hashtable<String, String[]>();
-            ArrayList<String> list = new ArrayList<String>();
-            for (int i = 0; i < (parts.length/4); i++) {
-                String key = parts[i*4];
+            passMatrix = new Hashtable<>();
+            ArrayList<String> list = new ArrayList<>();
+            for (int i = 0; i < (parts.length / 4); i++) {
+                String key = parts[i * 4];
                 String[] values = new String[3];
-                for (int j = 0; j < 3; j++)
-                {
+                for (int j = 0; j < 3; j++) {
                     int value = i * 4 + j + 1;
 
                     values[j] = parts[value];
@@ -80,19 +73,19 @@ public class PassActivity extends ActionBarActivity {
                 passMatrix.put(key, values);
             }
 
-            listAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,android.R.id.text1,list);
+            listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, list);
 
             passList.setAdapter(listAdapter);
             passList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    OnListItemSelected(parent,view,position,id);
+                    OnListItemSelected(parent, view, position, id);
                 }
             });
             passList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    OnListItemLongClick(parent,view,position,id);
+                    OnListItemLongClick(parent, view, position, id);
                     return true;
                 }
             });
@@ -102,8 +95,7 @@ public class PassActivity extends ActionBarActivity {
         }
     }
 
-    private void OnListItemLongClick(AdapterView<?> parent, View view, int position, long id)
-    {
+    private void OnListItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         final String itemName = (String) passList.getItemAtPosition(position);
 
         AlertDialog.Builder ad = new AlertDialog.Builder(this);
@@ -116,19 +108,18 @@ public class PassActivity extends ActionBarActivity {
                 passMatrix.remove(itemName);
             }
         })
-        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
 
         ad.create().show();
     }
 
-    private void OnListItemSelected(AdapterView<?> parent, View view, int position, long id)
-    {
-        String itemName = (String)passList.getItemAtPosition(position);
+    private void OnListItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String itemName = (String) passList.getItemAtPosition(position);
 
         String[] subitems = passMatrix.get(itemName);
 
@@ -145,8 +136,7 @@ public class PassActivity extends ActionBarActivity {
         builder.create().show();
     }
 
-    private void SaveData()
-    {
+    private void SaveData() {
         try {
             FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "mainFile.keep"));
 
@@ -169,8 +159,7 @@ public class PassActivity extends ActionBarActivity {
         }
     }
 
-    private void AddItem()
-    {
+    private void AddItem() {
         LayoutInflater inflater = getLayoutInflater();
         final View layout = inflater.inflate(R.layout.add_dialog, null);
 
@@ -198,12 +187,12 @@ public class PassActivity extends ActionBarActivity {
                 Toast.makeText(PassActivity.this, title + " Added", Toast.LENGTH_SHORT).show();
             }
         })
-               .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                   @Override
-                   public void onClick(DialogInterface dialog, int which) {
-                       dialog.cancel();
-                   }
-               });
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
 
         builder.create().show();
     }
@@ -215,8 +204,7 @@ public class PassActivity extends ActionBarActivity {
         return true;
     }
 
-    public void ExportFile()
-    {
+    public void ExportFile() {
         LayoutInflater inflater = getLayoutInflater();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -229,8 +217,7 @@ public class PassActivity extends ActionBarActivity {
                 EditText pathText = (EditText) layout.findViewById(R.id.fileDir);
                 File file = new File(pathText.getText().toString());
 
-                if (file.getParentFile().exists())
-                {
+                if (file.getParentFile().exists()) {
                     try {
                         file.createNewFile();
 
@@ -250,9 +237,47 @@ public class PassActivity extends ActionBarActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else
+                    Toast.makeText(PassActivity.this, "Directory doesn't exist!", Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.create().show();
+    }
+
+    private void ChangeLoginPassword(){
+        LayoutInflater inflater = getLayoutInflater();
+        final View layout = inflater.inflate(R.layout.change_dialog, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Change Login Password");
+        builder.setView(layout);
+        builder.setPositiveButton("Change", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText original = (EditText) layout.findViewById(R.id.originalPassword);
+                EditText newPass = (EditText) layout.findViewById(R.id.newPassword);
+                EditText checkPass = (EditText) layout.findViewById(R.id.newPasswordCheckd);
+
+                String originalS = original.getText().toString();
+                String newS = newPass.getText().toString();
+                String checkS = checkPass.getText().toString();
+
+                if (originalS.equals(password)) {
+                    if (newS.equals(checkS)) {
+                        password = newS;
+                        Toast.makeText(PassActivity.this, "Password Changed.", Toast.LENGTH_LONG).show();
+                    }
+                    else
+                        Toast.makeText(PassActivity.this, "Passwords don't match!", Toast.LENGTH_SHORT).show();
                 }
                 else
-                    Toast.makeText(PassActivity.this, "Directory doesn't exist!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(PassActivity.this, "Original Password not Correct!", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -286,6 +311,10 @@ public class PassActivity extends ActionBarActivity {
 
             case R.id.action_exportPass:
                 ExportFile();
+                return true;
+
+            case R.id.action_changePass:
+                ChangeLoginPassword();
                 return true;
         }
 

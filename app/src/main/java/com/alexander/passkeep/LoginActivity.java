@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -107,16 +108,32 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onClick(DialogInterface arg0, int arg1)
             {
-                try {
-                    openFileOutput("mainFile.keep", Context.MODE_PRIVATE);
+                LayoutInflater inflater = getLayoutInflater();
+                final View layout = inflater.inflate(R.layout.new_pass, null);
 
-                    File main = new File(getFilesDir() + "/mainFile.keep");
-                    TripleDesHandler.Encrypt("0000", main);
+                AlertDialog.Builder dialog = new AlertDialog.Builder(LoginActivity.this);
+                dialog.setTitle("New File Password");
+                dialog.setView(layout);
+                dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String newPass = ((EditText) layout.findViewById(R.id.newPassword)).getText().toString();
+                        String newPassCheck = ((EditText) layout.findViewById(R.id.newPasswordCheckd)).getText().toString();
 
-                    Toast.makeText(LoginActivity.this, "File Default Password: 0000", Toast.LENGTH_LONG).show();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                        if (newPass.equals(newPassCheck)) {
+                            createFile(newPass);
+                        }
+                        else
+                            Toast.makeText(LoginActivity.this, "Passwords not the same.", Toast.LENGTH_LONG).show();
+                    }
+                });
+                dialog.setNegativeButton("Default Password", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        createFile("0000");
+                    }
+                });
+                dialog.create().show();
             }
         });
 
@@ -137,6 +154,24 @@ public class LoginActivity extends ActionBarActivity {
         });
 
         builder.create().show();
+    }
+
+    private void createFile(String password)
+    {
+        try {
+            openFileOutput("mainFile.keep", Context.MODE_PRIVATE);
+
+            File main = new File(getFilesDir() + "/mainFile.keep");
+            TripleDesHandler.Encrypt(password, main);
+
+            if (password.equals("0000"))
+                Toast.makeText(LoginActivity.this, "File Created with password: " + password, Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(LoginActivity.this, "File Created", Toast.LENGTH_LONG).show();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ImportFile()
